@@ -12,11 +12,8 @@ import Environment 1.0
 ApplicationWindow {
     id: window
 
-    width: minimumWidth
-    height: minimumHeight
-
-    minimumWidth: 1225
-    minimumHeight: 900
+    minimumWidth: 600
+    minimumHeight: 600
 
     visible: true
 
@@ -33,16 +30,6 @@ ApplicationWindow {
             y: 5
             width: parent.width - x * 2
             height: parent.height - y * 2
-
-            Timer {
-                onTriggered: {
-                    // parent.diffuse();
-                    // parent.update();
-                }
-                repeat: true
-                running: true
-                interval: 1000
-            }
         }
     }
 }
