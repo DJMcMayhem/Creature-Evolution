@@ -8,7 +8,7 @@ import Environment
 from PyQt5.QtCore import QT_VERSION_STR, qInstallMessageHandler, Qt, QCoreApplication
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtQml import QQmlApplicationEngine, qmlRegisterType
-from asyncqt import QEventLoop
+from qasync import QEventLoop
 import asyncio
 from EventLoop import EventLoop
 

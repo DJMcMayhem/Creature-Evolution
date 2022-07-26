@@ -46,4 +46,4 @@ class Wanderer(Actor.Actor):
 
     def draw(self, painter: QPainter):
         painter.setBrush(QBrush(QColor("black")))
-        painter.drawRect(self.x, self.y, self.width, self.height)
+        painter.drawRect(int(self.x), int(self.y), int(self.width), int(self.height))
