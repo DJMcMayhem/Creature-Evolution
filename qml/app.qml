@@ -18,6 +18,8 @@ ApplicationWindow {
     visible: true
 
     Rectangle {
+        id: simulationBox
+
         width: 500
         height: 500
         anchors.centerIn: parent
@@ -26,10 +28,28 @@ ApplicationWindow {
         border.width: 5
 
         Environment {
+            id: environment
+
             x: 5
             y: 5
             width: parent.width - x * 2
             height: parent.height - y * 2
+        }
+    }
+
+    Column {
+        anchors.top: simulationBox.bottom
+        anchors.left: simulationBox.left
+        anchors.topMargin: 5
+
+        spacing: 5
+
+        Text {
+            text: "FPS: " + environment.fps
+        }
+
+        Text {
+            text: "Actor Count: " + environment.actor_count
         }
     }
 }

@@ -5,6 +5,8 @@ from PyQt5.QtGui import QPainter
 
 from math import sin, cos, radians
 
+from Degrees import rotate_towards
+
 
 class Actor(abc.ABC):
     def __init__(self, x, y, width, height, environment):
@@ -15,13 +17,20 @@ class Actor(abc.ABC):
         self.height = height
 
         self.cur_heading = 0
+        self.target_heading = 0
         self.cur_velocity = 0
+
+        # Degrees/second
+        self.angular_speed = 0
 
     @abc.abstractmethod
     def draw(self, painter: QPainter):
         raise NotImplementedError
 
     def update(self, delta_time: float):
+        if self.cur_heading != self.target_heading:
+            self.cur_heading = rotate_towards(self.cur_heading, self.target_heading, self.angular_speed * delta_time)
+
         delta_y = self.cur_velocity * delta_time * sin(radians(self.cur_heading))
         delta_x = self.cur_velocity * delta_time * cos(radians(self.cur_heading))
 

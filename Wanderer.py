@@ -8,24 +8,22 @@ from EventLoop import invoke_repeating
 
 
 class Wanderer(Actor.Actor):
-    directions = ["N", "E", "S", "W"]
-
     def __init__(self, x, y, environment):
         super().__init__(x, y, 10, 10, environment)
-        self.cur_direction = "N"
+        self.cur_heading = random.randint(0, 360)
+        self.target_heading = self.cur_heading
+
         self.speed = 30
+        self.angular_speed = 180
 
         self.environment = environment
-
-        self.elapsed_time = 0.0
-        self.turn_time = 2.0
 
         self.cur_velocity = self.speed
 
         invoke_repeating(self.rotate, 1)
 
     def rotate(self):
-        self.cur_heading = random.randint(0, 360)
+        self.target_heading = random.randint(0, 360)
 
     def draw(self, painter: QPainter):
         painter.setBrush(QBrush(QColor("black")))

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QColor, QFont, QBrush
-from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtCore import Qt, pyqtSlot, pyqtProperty, pyqtSignal
 from PyQt5.QtQuick import QQuickPaintedItem
 
 from Wanderer import Wanderer
@@ -18,23 +18,38 @@ class Environment(QQuickPaintedItem):
 
         self.actors = []
 
-        # asyncio.create_task(self.run())
-        invoke_repeating(self.spawn_creatures, 1)
+        # Move and draw at 60 _FPS, but check overlap is more intensive so do that every 100ms
+        # This might miss some collisions
+        invoke_repeating(self.spawn_actors, 1)
         invoke_repeating(self.update_actors, 1 / 60)
+        invoke_repeating(self.check_overlap, 0.1)
         invoke_repeating(self.print_frame_time, 1)
-
-        self.last_frame = 0
 
         self.last_update_time = None
 
+        self._frames = 0
+        self._fps = 0
+
+    fps_changed = pyqtSignal()
+    @pyqtProperty(int, notify=fps_changed)
+    def fps(self):
+        return self._fps
+
+    actor_count_changed = pyqtSignal()
+    @pyqtProperty(int, notify=actor_count_changed)
+    def actor_count(self):
+        return len(self.actors)
+
     def print_frame_time(self):
-        print(self.last_frame)
+        self._fps = self._frames
+        self._frames = 0
+        self.fps_changed.emit()
 
     def paint(self, painter: QPainter):
         for actor in self.actors:
             actor.draw(painter)
 
-    def spawn_creatures(self):
+    def spawn_actors(self):
         if len(self.actors) < 20:
             x = random.randint(0, self.width())
             y = random.randint(0, self.height())
@@ -51,7 +66,12 @@ class Environment(QQuickPaintedItem):
         for actor in self.actors:
             actor.update(time_delta)
 
-        # Check for overlap
+        self.update()
+        self._frames += 1
+
+        self.actor_count_changed.emit()
+
+    def check_overlap(self):
         overlap = []
 
         for i, actor in enumerate(self.actors):
@@ -63,6 +83,3 @@ class Environment(QQuickPaintedItem):
             a1.on_overlap(a2)
             a2.on_overlap(a1)
 
-        self.update()
-
-        self.last_frame = time.time() - t
