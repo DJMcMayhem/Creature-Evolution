@@ -3,6 +3,15 @@ from PyQt5.QtCore import QObject
 import asyncio
 
 
+def invoke_repeating(func, time):
+    async def do_func_repeating():
+        while True:
+            await asyncio.sleep(time)
+            func()
+
+    return asyncio.create_task(do_func_repeating())
+
+
 class EventLoop(QObject):
     def __init__(self, app: QApplication):
         super().__init__()

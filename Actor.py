@@ -1,7 +1,7 @@
+from __future__ import annotations
+
 import abc
 from PyQt5.QtGui import QPainter
-
-import asyncio
 
 
 class Actor(abc.ABC):
@@ -12,23 +12,20 @@ class Actor(abc.ABC):
         self.width = width
         self.height = height
 
-        asyncio.create_task(self.run())
-
     @abc.abstractmethod
     def draw(self, painter: QPainter):
         raise NotImplementedError
 
     @abc.abstractmethod
-    async def run(self):
+    async def update(self, delta_time: float):
         raise NotImplementedError
 
-    def overlaps(self, other: "Actor") -> bool:
-        """
-        if (RectA.X1 < RectB.X2 && RectA.X2 > RectB.X1 &&
-            RectA.Y1 > RectB.Y2 && RectA.Y2 < RectB.Y1)
-        """
+    def overlaps(self, other: Actor) -> bool:
         return (self.left < other.right and self.right > other.left and
                 self.top < other.bottom and self.bottom > other.top)
+
+    def on_overlap(self, other: Actor):
+        pass
 
     @property
     def left(self):

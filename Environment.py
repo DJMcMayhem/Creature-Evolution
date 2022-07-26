@@ -5,8 +5,11 @@ from PyQt5.QtQuick import QQuickPaintedItem
 
 from Wanderer import Wanderer
 
+from EventLoop import invoke_repeating
+
 import asyncio
 import random
+import time
 
 
 class Environment(QQuickPaintedItem):
@@ -15,34 +18,43 @@ class Environment(QQuickPaintedItem):
 
         self.actors = []
 
-        asyncio.create_task(self.run())
+        # asyncio.create_task(self.run())
+        invoke_repeating(self.spawn_creatures, 1)
+        invoke_repeating(self.update_actors, 0.1)
+
+        self.last_update_time = None
 
     def paint(self, painter: QPainter):
         for actor in self.actors:
             actor.draw(painter)
 
-    async def check_overlaps(self):
-        while True:
-            overlappers = []
+    def spawn_creatures(self):
+        if len(self.actors) < 20:
+            x = random.randint(0, self.width())
+            y = random.randint(0, self.height())
+            self.actors.append(Wanderer(x, y, self))
 
-            for i, actor in enumerate(self.actors):
-                for other_actor in self.actors[i+1:]:
-                    if actor.overlaps(other_actor):
-                        overlappers.append(actor)
-                        overlappers.append(other_actor)
+    def update_actors(self):
+        t = time.time()
+        if self.last_update_time is None:
+            self.last_update_time = t
 
-            for actor in overlappers:
-                self.actors.remove(actor)
+        time_delta = t - self.last_update_time
+        self.last_update_time = t
 
-            await asyncio.sleep(0.1)
+        for actor in self.actors:
+            actor.update(time_delta)
 
-    async def run(self):
-        asyncio.create_task(self.check_overlaps())
+        # Check for overlap
+        overlap = []
 
-        while True:
-            if len(self.actors) < 20:
-                x = random.randint(0, self.width())
-                y = random.randint(0, self.height())
-                self.actors.append(Wanderer(x, y, self))
+        for i, actor in enumerate(self.actors):
+            for other_actor in self.actors[i + 1:]:
+                if actor.overlaps(other_actor):
+                    overlap.append((actor, other_actor))
 
-            await asyncio.sleep(1)
+        for a1, a2 in overlap:
+            a1.on_overlap(a2)
+            a2.on_overlap(a1)
+
+        self.update()
