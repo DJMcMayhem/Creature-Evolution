@@ -20,22 +20,12 @@ class Wanderer(Actor.Actor):
         self.elapsed_time = 0.0
         self.turn_time = 2.0
 
+        self.cur_velocity = self.speed
+
         invoke_repeating(self.rotate, 1)
 
-    def update(self, delta_time: float):
-        if self.cur_direction == "N":
-            self.y -= self.speed * delta_time
-        if self.cur_direction == "S":
-            self.y += self.speed * delta_time
-        if self.cur_direction == "E":
-            self.x += self.speed * delta_time
-        if self.cur_direction == "W":
-            self.x -= self.speed * delta_time
-
-        self.clamp()
-
     def rotate(self):
-        self.cur_direction = random.choice(Wanderer.directions)
+        self.cur_heading = random.randint(0, 360)
 
     def draw(self, painter: QPainter):
         painter.setBrush(QBrush(QColor("black")))

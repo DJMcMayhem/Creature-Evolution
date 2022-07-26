@@ -20,9 +20,15 @@ class Environment(QQuickPaintedItem):
 
         # asyncio.create_task(self.run())
         invoke_repeating(self.spawn_creatures, 1)
-        invoke_repeating(self.update_actors, 0.1)
+        invoke_repeating(self.update_actors, 1 / 60)
+        invoke_repeating(self.print_frame_time, 1)
+
+        self.last_frame = 0
 
         self.last_update_time = None
+
+    def print_frame_time(self):
+        print(self.last_frame)
 
     def paint(self, painter: QPainter):
         for actor in self.actors:
@@ -58,3 +64,5 @@ class Environment(QQuickPaintedItem):
             a2.on_overlap(a1)
 
         self.update()
+
+        self.last_frame = time.time() - t

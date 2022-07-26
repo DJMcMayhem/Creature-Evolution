@@ -3,6 +3,8 @@ from __future__ import annotations
 import abc
 from PyQt5.QtGui import QPainter
 
+from math import sin, cos, radians
+
 
 class Actor(abc.ABC):
     def __init__(self, x, y, width, height, environment):
@@ -12,13 +14,21 @@ class Actor(abc.ABC):
         self.width = width
         self.height = height
 
+        self.cur_heading = 0
+        self.cur_velocity = 0
+
     @abc.abstractmethod
     def draw(self, painter: QPainter):
         raise NotImplementedError
 
-    @abc.abstractmethod
-    async def update(self, delta_time: float):
-        raise NotImplementedError
+    def update(self, delta_time: float):
+        delta_y = self.cur_velocity * delta_time * sin(radians(self.cur_heading))
+        delta_x = self.cur_velocity * delta_time * cos(radians(self.cur_heading))
+
+        self.x += delta_x
+        self.y += delta_y
+
+        self.clamp()
 
     def overlaps(self, other: Actor) -> bool:
         return (self.left < other.right and self.right > other.left and
