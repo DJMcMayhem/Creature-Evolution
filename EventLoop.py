@@ -12,6 +12,14 @@ def invoke_repeating(func, time):
     return asyncio.create_task(do_func_repeating())
 
 
+def invoke(func, time):
+    async def do_func():
+        await asyncio.sleep(time)
+        func()
+
+    return asyncio.create_task(do_func())
+
+
 class EventLoop(QObject):
     def __init__(self, app: QApplication):
         super().__init__()

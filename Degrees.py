@@ -1,3 +1,6 @@
+from math import atan2, degrees
+
+
 def shortest_move(a1: float, a2: float) -> float:
     dist_positive = (a2 - a1) % 360.0
     dist_negative = (a1 - a2) % 360.0
@@ -19,3 +22,7 @@ def rotate_towards(a1: float, a2: float, max_rot: float) -> float:
         return (a1 + max(-max_rot, turn)) % 360.0
 
     return (a1 + min(max_rot, turn)) % 360.0
+
+
+def angle_between(x1: float, y1: float, x2: float, y2: float) -> float:
+    return degrees(atan2(y2 - y1, x2 - x1))
