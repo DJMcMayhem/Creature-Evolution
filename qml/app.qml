@@ -12,16 +12,16 @@ import Environment 1.0
 ApplicationWindow {
     id: window
 
-    minimumWidth: 600
-    minimumHeight: 600
+    minimumWidth: 800
+    minimumHeight: 900
 
     visible: true
 
     Rectangle {
         id: simulationBox
 
-        width: 500
-        height: 500
+        width: 700
+        height: 700
         anchors.centerIn: parent
 
         border.color: "black"
@@ -34,6 +34,10 @@ ApplicationWindow {
             y: 5
             width: parent.width - x * 2
             height: parent.height - y * 2
+            MouseArea {
+                anchors.fill: parent
+                onClicked: environment.on_clicked(mouse.x, mouse.y)
+            }
         }
     }
 
@@ -49,7 +53,11 @@ ApplicationWindow {
         }
 
         Text {
-            text: "Actor Count: " + environment.actor_count
+            text: "Prey Count: " + environment.prey_count
+        }
+
+        Text {
+            text: "Predator Count: " + environment.predator_count
         }
     }
 }

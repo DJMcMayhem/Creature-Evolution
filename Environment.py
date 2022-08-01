@@ -7,6 +7,7 @@ import Actor
 from Wanderer import Wanderer
 from Food import Food
 from Prey import Prey
+from Predator import Predator
 from EventLoop import invoke_repeating, invoke
 
 import asyncio
@@ -23,14 +24,15 @@ class Environment(QQuickPaintedItem):
         self.actors: typing.Dict[type, typing.List[Actor.Actor]] = {
             Wanderer: [],
             Prey: [],
+            Predator: [],
             Food: []
         }
 
         # Move and draw at 60 _FPS, but check overlap is more intensive so do that every 100ms
         # This might miss some collisions
-        invoke_repeating(lambda: self.spawn_actors(Food, 1), 1)
+        invoke_repeating(lambda: self.spawn_actors(Food, 2), 0.5)
         invoke_repeating(self.update_actors, 1 / 60)
-        invoke_repeating(self.print_frame_time, 1)
+        invoke_repeating(self.update_frame_time, 1)
         invoke(self.spawn_initial, 1)
 
         self.last_update_time = None
@@ -40,25 +42,40 @@ class Environment(QQuickPaintedItem):
 
         self.delete_actors: typing.Set[Actor.Actor] = set()
 
+    @pyqtSlot(int, int)
+    def on_clicked(self, x, y):
+        for actor_list in self.actors.values():
+            for actor in actor_list:
+                if actor.left <= x <= actor.right and actor.top <= y <= actor.bottom:
+                    print(actor)
+                    return
+
+        print("No actor found")
+
     def spawn_initial(self):
-        self.spawn_actors(Prey, 2)
-        self.actors[Prey][0].color = "red"
+        self.spawn_actors(Prey, 10)
+        self.spawn_actors(Food, 20)
+        self.spawn_actors(Predator, 5)
 
     fps_changed = pyqtSignal()
     @pyqtProperty(int, notify=fps_changed)
     def fps(self):
         return self._fps
 
-    actor_count_changed = pyqtSignal()
+    prey_count_changed = pyqtSignal()
+    @pyqtProperty(int, notify=prey_count_changed)
+    def prey_count(self):
+        return len(self.actors[Prey])
 
-    @pyqtProperty(int, notify=actor_count_changed)
-    def actor_count(self):
-        return sum(map(len, self.actors.values()))
+    predator_count_changed = pyqtSignal()
+    @pyqtProperty(int, notify=predator_count_changed)
+    def predator_count(self):
+        return len(self.actors[Predator])
 
     def schedule_remove_actor(self, actor):
         self.delete_actors.add(actor)
 
-    def print_frame_time(self):
+    def update_frame_time(self):
         self._fps = self._frames
         self._frames = 0
         self.fps_changed.emit()
@@ -100,7 +117,8 @@ class Environment(QQuickPaintedItem):
 
         self.update()
 
-        self.actor_count_changed.emit()
+        self.predator_count_changed.emit()
+        self.prey_count_changed.emit()
 
     """
     def check_overlap_naive(self):
