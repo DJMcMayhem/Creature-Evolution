@@ -6,7 +6,7 @@ from PyQt5.QtQuick import QQuickPaintedItem
 import Actor
 from Wanderer import Wanderer
 from Food import Food
-from Prey import Prey
+from Prey import DumbPrey
 from Predator import Predator
 from EventLoop import invoke_repeating, invoke
 
@@ -23,7 +23,7 @@ class Environment(QQuickPaintedItem):
 
         self.actors: typing.Dict[type, typing.List[Actor.Actor]] = {
             Wanderer: [],
-            Prey: [],
+            DumbPrey: [],
             Predator: [],
             Food: []
         }
@@ -53,7 +53,7 @@ class Environment(QQuickPaintedItem):
         print("No actor found")
 
     def spawn_initial(self):
-        self.spawn_actors(Prey, 10)
+        self.spawn_actors(DumbPrey, 10)
         self.spawn_actors(Food, 20)
         self.spawn_actors(Predator, 5)
 
@@ -65,7 +65,7 @@ class Environment(QQuickPaintedItem):
     prey_count_changed = pyqtSignal()
     @pyqtProperty(int, notify=prey_count_changed)
     def prey_count(self):
-        return len(self.actors[Prey])
+        return len(self.actors[DumbPrey])
 
     predator_count_changed = pyqtSignal()
     @pyqtProperty(int, notify=predator_count_changed)
