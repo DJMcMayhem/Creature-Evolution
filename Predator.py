@@ -5,7 +5,7 @@ import asyncio
 import random
 import math
 
-from Prey import Prey
+from Prey import DumbPrey
 from Degrees import angle_between
 
 from EventLoop import invoke
@@ -43,7 +43,7 @@ class Predator(Actor.MovingActor):
             self.target_prey = None
             return
 
-        nearest, dist = self.environment.get_nearest_actor(self, Prey)
+        nearest, dist = self.environment.get_nearest_actor(self, DumbPrey)
         if nearest is not None and dist <= self.vision:
             deg = angle_between(self.center_x, self.center_y, nearest.center_x, nearest.center_y)
             self.target_prey = nearest
@@ -62,9 +62,9 @@ class Predator(Actor.MovingActor):
                 self.target_prey = None
 
                 self.cur_velocity = 0
-                self.hungry = False
+                # self.hungry = False
                 invoke(lambda: self.set_velocity(self.wander_speed), 1)
-                invoke(self.get_hungry, 10)
+                # invoke(self.get_hungry, 2)
             else:
                 deg = angle_between(self.center_x, self.center_y, self.target_prey.center_x, self.target_prey.center_y)
                 self.target_heading = deg
