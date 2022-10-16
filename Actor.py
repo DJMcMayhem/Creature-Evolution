@@ -100,7 +100,7 @@ class MovingActor(Actor, ABC):
         delta_x = self.cur_velocity * delta_time * cos(radians(self.cur_heading))
 
         self.x += delta_x
-        self.y += delta_y
+        self.y -= delta_y
 
         self.clamp()
 

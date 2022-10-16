@@ -39,50 +39,12 @@ class Brain:
 
         return Brain(weight_layers, biases, activation)
 
-    """
-    @staticmethod
-    def from_layers(num_input_nodes: int, num_hidden_layers: int, hidden_layer_nodes: int, num_output_nodes: int, activation=sigmoid, randomize=False):
-        num_input_nodes = num_input_nodes
-        num_hidden_layers = num_hidden_layers
-        hidden_layer_nodes = hidden_layer_nodes
-        num_output_nodes = num_output_nodes
-
-        func = lambda t: np.eye(*t)
-
-        if randomize:
-            func = np.random.random
-            weight_layers = [func((num_input_nodes, hidden_layer_nodes))]
-        else:
-            weight_layers = [np.zeros((num_input_nodes, hidden_layer_nodes))]
-
-        for _ in range(num_hidden_layers - 1):
-            weight_layers.append(func((hidden_layer_nodes, hidden_layer_nodes)))
-
-        weight_layers.append(func((hidden_layer_nodes, num_output_nodes)))
-
-        biases = []
-
-        for matrix in weight_layers:
-            if randomize:
-                biases.append(np.random.randn(*matrix.shape))
-            else:
-                biases.append(np.zeros_like(matrix))
-
-        return Brain(weight_layers, biases, activation)
-    """
-
     def get_output(self, input_nodes):
         if len(input_nodes) != self.num_input_nodes:
             raise ValueError("Incorrect size of input nodes")
 
-        #print(0)
-        #print(input_nodes)
-
         for i, matrix in enumerate(self.weight_layers):
             input_nodes = self.activation(input_nodes @ matrix)
-
-            #print(i + 1)
-            #print(input_nodes)
 
         return input_nodes
 

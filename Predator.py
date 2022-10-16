@@ -102,7 +102,7 @@ class Predator(Actor.MovingActor):
         painter.drawRect(int(self.x), int(self.y), int(self.width), int(self.height))
 
         target_x = self.center_x + math.cos(math.radians(self.cur_heading)) * self.speed
-        target_y = self.center_y + math.sin(math.radians(self.cur_heading)) * self.speed
+        target_y = self.center_y - math.sin(math.radians(self.cur_heading)) * self.speed
 
         painter.drawLine(self.center_x, self.center_y, target_x, target_y)
 

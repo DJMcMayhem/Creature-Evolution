@@ -11,8 +11,9 @@ class Food(Actor.Actor):
 
         # When food gets eaten, instantly mark it as deleted so that no other actor can eat it
         self.eaten = False
+        self.color = "green"
 
     def draw(self, painter: QPainter):
-        painter.setBrush(QBrush(QColor("green")))
+        painter.setBrush(QBrush(QColor(self.color)))
         painter.setPen(QPen())
         painter.drawRect(int(self.x), int(self.y), int(self.width), int(self.height))

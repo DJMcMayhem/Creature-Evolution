@@ -25,4 +25,4 @@ def rotate_towards(a1: float, a2: float, max_rot: float) -> float:
 
 
 def angle_between(x1: float, y1: float, x2: float, y2: float) -> float:
-    return degrees(atan2(y2 - y1, x2 - x1))
+    return degrees(atan2(0 - (y2 - y1), x2 - x1))

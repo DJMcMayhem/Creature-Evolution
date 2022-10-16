@@ -6,7 +6,8 @@ from PyQt5.QtQuick import QQuickPaintedItem
 import Actor
 from Wanderer import Wanderer
 from Food import Food
-from Prey import DumbPrey
+from Prey import DumbPrey, BrainPrey
+from RayCaster import RayCaster
 from Predator import Predator
 from EventLoop import invoke_repeating, invoke
 
@@ -24,7 +25,9 @@ class Environment(QQuickPaintedItem):
         self.actors: typing.Dict[type, typing.List[Actor.Actor]] = {
             Wanderer: [],
             DumbPrey: [],
+            BrainPrey: [],
             Predator: [],
+            RayCaster: [],
             Food: []
         }
 
@@ -42,20 +45,23 @@ class Environment(QQuickPaintedItem):
 
         self.delete_actors: typing.Set[Actor.Actor] = set()
 
+        self.num_chunks = 10
+
+        self.chunk_list = [[[] for _ in range(self.num_chunks)] for _ in range(self.num_chunks)]
+
+    @property
+    def chunk_size(self):
+        return int(self.width() / self.num_chunks)
+
     @pyqtSlot(int, int)
     def on_clicked(self, x, y):
-        for actor_list in self.actors.values():
-            for actor in actor_list:
-                if actor.left <= x <= actor.right and actor.top <= y <= actor.bottom:
-                    print(actor)
-                    return
-
-        print("No actor found")
+        food = Food(x, y, self)
+        self.actors[Food].append(food)
 
     def spawn_initial(self):
-        self.spawn_actors(DumbPrey, 10)
+        self.spawn_actors(DumbPrey, 20)
         self.spawn_actors(Food, 20)
-        self.spawn_actors(Predator, 5)
+        self.spawn_actors(Predator, 2)
 
     fps_changed = pyqtSignal()
     @pyqtProperty(int, notify=fps_changed)
@@ -86,11 +92,42 @@ class Environment(QQuickPaintedItem):
             for actor in actor_type_list:
                 actor.draw(painter)
 
+    def draw_chunks(self, painter: QPainter):
+        for x in range(0, self.num_chunks):
+            painter.drawLine(x * self.chunk_size, 0, x * self.chunk_size, int(self.height()))
+
+        for y in range(0, self.num_chunks):
+            painter.drawLine(0, y * self.chunk_size, int(self.width()), y * self.chunk_size)
+
     def spawn_actors(self, actor_type, n):
         for i in range(n):
             x = random.randint(0, self.width() - actor_type.WIDTH)
             y = random.randint(0, self.height() - actor_type.HEIGHT)
             self.actors[actor_type].append(actor_type(x, y, self))
+
+    def actors_within_dist(self, actor, dist, actor_types=None):
+        actor_chunk_x = int(actor.center_x / self.chunk_size)
+        actor_chunk_y = int(actor.center_y / self.chunk_size)
+
+        chunks_away = int(dist / self.chunk_size) + 1
+
+        for d_x in range(-chunks_away, chunks_away + 1):
+            for d_y in range(-chunks_away, chunks_away + 1):
+                x, y = actor_chunk_x + d_x, actor_chunk_y + d_y
+
+                if not -1 < x < self.num_chunks:
+                    continue
+
+                if not -1 < y < self.num_chunks:
+                    continue
+
+                for other_actor in self.chunk_list[x][y]:
+                    if other_actor is actor:
+                        continue
+
+                    if actor_types is None or type(other_actor) in actor_types:
+                        if actor.edge_distance(other_actor) < dist:
+                            yield other_actor
 
     def update_actors(self):
         t = time.time()
@@ -111,6 +148,15 @@ class Environment(QQuickPaintedItem):
         time_delta = t - self.last_update_time
         self.last_update_time = t
 
+        # Reset the chunk list
+        self.chunk_list = [[[] for _ in range(self.num_chunks)] for _ in range(self.num_chunks)]
+
+        for actor_type_list in self.actors.values():
+            for actor in actor_type_list:
+                x, y = int(actor.center_x / self.chunk_size), int(actor.center_y / self.chunk_size)
+
+                self.chunk_list[x][y].append(actor)
+
         for actor_type_list in self.actors.values():
             for actor in actor_type_list:
                 actor.update(time_delta)
@@ -119,20 +165,6 @@ class Environment(QQuickPaintedItem):
 
         self.predator_count_changed.emit()
         self.prey_count_changed.emit()
-
-    """
-    def check_overlap_naive(self):
-        overlap = []
-
-        for i, actor in enumerate(self.actors):
-            for other_actor in self.actors[i + 1:]:
-                if actor.overlaps(other_actor):
-                    overlap.append((actor, other_actor))
-
-        for a1, a2 in overlap:
-            a1.on_overlap(a2)
-            a2.on_overlap(a1)
-    """
 
     def get_nearest_actor(self, actor: Actor.Actor, actor_type: type) -> typing.Tuple[Actor.Actor, float]:
         closest_dist = math.inf
