@@ -22,22 +22,24 @@ class Brain:
         self.num_input_nodes = weight_layers[0].shape[0]
 
     @staticmethod
-    def from_layers(layers: typing.List[int], activation=sigmoid, randomize=False, connect_first=True):
+    def from_layers(layers: typing.List[int], activation=sigmoid, randomize_amt=0, connect_first=True):
         weight_layers = []
         biases = []
         for i, (w, h) in enumerate(zip(layers[:-1], layers[1:])):
-            if randomize:
-                weight_layers.append(np.random.random((w, h)))
-                biases.append(np.random.random((w, h)))
+            #if randomize:
+                #weight_layers.append(np.random.random((w, h)))
+                #biases.append(np.random.random((w, h)))
 
-            else:
-                weight_layers.append((np.eye(w, h)))
-                biases.append(np.zeros((w, h)))
+            weight_layers.append((np.eye(w, h)))
+            biases.append(np.zeros((w, h)))
 
         if not connect_first:
             weight_layers[0] = np.zeros_like(weight_layers[0])
 
-        return Brain(weight_layers, biases, activation)
+        if randomize_amt == 0:
+            return Brain(weight_layers, biases, activation)
+
+        return Brain(weight_layers, biases, activation).mutate(1, randomize_amt)
 
     def get_output(self, input_nodes):
         if len(input_nodes) != self.num_input_nodes:

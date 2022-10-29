@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPainter, QBrush, QColor
 import asyncio
 import random
 import math
+import numpy as np
 
 from Food import Food
 from Degrees import angle_between
@@ -100,8 +101,7 @@ class BrainPrey(Actor.MovingActor):
         super().__init__(x, y, BrainPrey.WIDTH, BrainPrey.HEIGHT, environment)
         self.ray_caster = RayCaster(self, 7, 60, 100)
 
-        # self.cur_heading = random.randint(0, 360)
-        self.cur_heading = 0
+        self.cur_heading = random.randint(0, 360)
         self.target_heading = self.cur_heading
 
         self.speed = 30
@@ -118,12 +118,23 @@ class BrainPrey(Actor.MovingActor):
         self.invoke_repeating(self.fast_update, 0.1)
 
         self.num_inputs = self.ray_caster.num_eyes
-        self.num_outputs = 3
-        self.brain = Brain.Brain.from_layers([self.num_inputs, 15, 10, 10, self.num_outputs],
-                                             randomize=False, connect_first=True, activation=Brain.relu)
+        self.num_outputs = 4
+        self.brain = Brain.Brain.from_layers([self.num_inputs, 10, self.num_outputs],
+                                             randomize_amt=0.15, connect_first=True, activation=Brain.relu)
 
     def process_brain(self):
-        pass
+        inputs = self.ray_caster.get_inputs()
+        speed_output, l_rot, r_rot, angular_velocity = self.brain.get_output(inputs)
+
+        self.cur_velocity = np.tanh(np.maximum(0, speed_output)) * self.speed
+        rot_amount = np.clip(l_rot - r_rot, -1, 1)
+        self.target_heading += rot_amount * self.angular_speed
+        #rot_amount = np.clip(angular_velocity, -self.angular_speed, self.angular_speed)
+
+        #if r_rot > l_rot:
+        #    rot_amount = 0 - rot_amount
+
+        #self.target_heading += rot_amount
 
     def fast_update(self):
         # Has the food been eaten?
@@ -137,11 +148,10 @@ class BrainPrey(Actor.MovingActor):
             self.energy_level += 500
             target_food.eaten = True
 
-        return
-
         # How much energy have we spent?
         size = self.width * self.height / 100
         self.energy_level -= self.cur_velocity * 0.1 * size
+        self.energy_level -= 1
 
         if self.energy_level <= 0:
             self.environment.schedule_remove_actor(self)
@@ -149,6 +159,9 @@ class BrainPrey(Actor.MovingActor):
         if self.energy_level > 1000:
             self.energy_level -= 500
             child = BrainPrey(self.x, self.y, self.environment)
+            child.target_heading = self.target_heading
+            child.cur_heading = self.cur_heading
+
             if self.color == "blue":
                 mutation_strength = 0.10
             else:
@@ -170,7 +183,7 @@ class BrainPrey(Actor.MovingActor):
 
         painter.drawLine(self.center_x, self.center_y, target_x, target_y)
 
-        self.ray_caster.draw(painter)
+        # self.ray_caster.draw(painter)
 
         #painter.setBrush(QBrush())
         #painter.setPen(QColor("blue"))

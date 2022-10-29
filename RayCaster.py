@@ -43,6 +43,9 @@ class RayCaster:
 
             for i, d_angle in enumerate(self.eye_angles):
                 angle = self.parent_actor.cur_heading + d_angle
+                dist = np.hypot(*origin - np.array([actor.center_x, actor.center_y]))
+                if dist > closests[i]:
+                    continue
 
                 off_x = math.cos(math.radians(angle)) * self.vision_distance
                 off_y = -math.sin(math.radians(angle)) * self.vision_distance
@@ -60,9 +63,10 @@ class RayCaster:
                     continue
 
                 # Otherwise, this ray must have hit this actor
-                dist = np.hypot(*origin - np.array([actor.center_x, actor.center_y]))
                 if dist < closests[i]:
                     closests[i] = dist
+
+        closests[closests == np.inf] = 0
 
         return closests / self.vision_distance
 

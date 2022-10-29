@@ -59,9 +59,9 @@ class Environment(QQuickPaintedItem):
         self.actors[Food].append(food)
 
     def spawn_initial(self):
-        self.spawn_actors(DumbPrey, 20)
+        self.spawn_actors(BrainPrey, 20)
         self.spawn_actors(Food, 20)
-        self.spawn_actors(Predator, 2)
+        #self.spawn_actors(Predator, 2)
 
     fps_changed = pyqtSignal()
     @pyqtProperty(int, notify=fps_changed)
@@ -71,7 +71,7 @@ class Environment(QQuickPaintedItem):
     prey_count_changed = pyqtSignal()
     @pyqtProperty(int, notify=prey_count_changed)
     def prey_count(self):
-        return len(self.actors[DumbPrey])
+        return len(self.actors[DumbPrey]) + len(self.actors[BrainPrey])
 
     predator_count_changed = pyqtSignal()
     @pyqtProperty(int, notify=predator_count_changed)
