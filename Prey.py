@@ -11,8 +11,6 @@ from Degrees import angle_between
 import Brain
 from RayCaster import RayCaster
 
-from EventLoop import invoke
-
 
 class DumbPrey(Actor.MovingActor):
     WIDTH = 10
@@ -55,7 +53,7 @@ class DumbPrey(Actor.MovingActor):
             self.target_food = None
 
             # self.cur_velocity = 0
-            # invoke(lambda: self.set_velocity(self.speed), 1)
+            # self.invoke(lambda: self.set_velocity(self.speed), 1)
 
         if self.target_food is not None:
             deg = angle_between(self.center_x, self.center_y, self.target_food.center_x, self.target_food.center_y)
@@ -112,7 +110,7 @@ class BrainPrey(Actor.MovingActor):
         self.color = "blue"
         self.eaten = False
 
-        self.cur_velocity = 0
+        self.cur_velocity = self.speed
 
         self.invoke_repeating(self.process_brain, 1)
         self.invoke_repeating(self.fast_update, 0.1)
@@ -129,12 +127,6 @@ class BrainPrey(Actor.MovingActor):
         self.cur_velocity = np.tanh(np.maximum(0, speed_output)) * self.speed
         rot_amount = np.clip(l_rot - r_rot, -1, 1)
         self.target_heading += rot_amount * self.angular_speed
-        #rot_amount = np.clip(angular_velocity, -self.angular_speed, self.angular_speed)
-
-        #if r_rot > l_rot:
-        #    rot_amount = 0 - rot_amount
-
-        #self.target_heading += rot_amount
 
     def fast_update(self):
         # Has the food been eaten?

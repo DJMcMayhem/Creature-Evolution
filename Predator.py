@@ -8,8 +8,6 @@ import math
 from Prey import DumbPrey
 from Degrees import angle_between
 
-from EventLoop import invoke
-
 
 class Predator(Actor.MovingActor):
     WIDTH = 10
@@ -63,7 +61,7 @@ class Predator(Actor.MovingActor):
 
                 self.cur_velocity = 0
                 # self.hungry = False
-                invoke(lambda: self.set_velocity(self.wander_speed), 1)
+                self.invoke(lambda: self.set_velocity(self.wander_speed), 1)
                 # invoke(self.get_hungry, 2)
             else:
                 deg = angle_between(self.center_x, self.center_y, self.target_prey.center_x, self.target_prey.center_y)
@@ -90,7 +88,7 @@ class Predator(Actor.MovingActor):
             child.height = child.width
 
             child.cur_velocity = 0
-            invoke(lambda: Predator.set_velocity(child, child.speed), 1)
+            self.invoke(lambda: Predator.set_velocity(child, child.speed), 1)
 
             self.environment.actors[Predator].append(child)
 

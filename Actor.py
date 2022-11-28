@@ -6,7 +6,7 @@ from abc import ABC
 from PyQt5.QtGui import QPainter
 from math import sin, cos, radians, sqrt
 from Degrees import rotate_towards
-from EventLoop import invoke_repeating
+import EventLoop
 
 
 class Actor(abc.ABC):
@@ -17,17 +17,20 @@ class Actor(abc.ABC):
         self.width = width
         self.height = height
 
-        self.tasks = []
+        self.event_loop = EventLoop.SynchronousEventLoop()
 
     @abc.abstractmethod
     def draw(self, painter: QPainter):
         raise NotImplementedError
 
     def invoke_repeating(self, func, time):
-        self.tasks.append(invoke_repeating(func, time))
+        self.event_loop.invoke_repeating(func, time)
+
+    def invoke(self, func, time):
+        self.event_loop.invoke(func, time)
 
     def update(self, delta_time: float):
-        pass
+        self.event_loop.update(delta_time)
 
     def overlaps(self, other: Actor) -> bool:
         return (self.left < other.right and self.right > other.left and
@@ -40,8 +43,7 @@ class Actor(abc.ABC):
         return sqrt(x_dist ** 2 + y_dist ** 2)
 
     def destroy(self):
-        for task in self.tasks:
-            task.cancel()
+        pass
 
     @property
     def left(self):
@@ -93,6 +95,8 @@ class MovingActor(Actor, ABC):
         self.angular_speed = 0
 
     def update(self, delta_time: float):
+        self.event_loop.update(delta_time)
+
         if self.cur_heading != self.target_heading:
             self.cur_heading = rotate_towards(self.cur_heading, self.target_heading, self.angular_speed * delta_time)
 

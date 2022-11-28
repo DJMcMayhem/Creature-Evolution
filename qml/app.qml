@@ -59,5 +59,9 @@ ApplicationWindow {
         Text {
             text: "Predator Count: " + environment.predator_count
         }
+
+        Text {
+            text: "Game Time: " + environment.game_time.toFixed(2)
+        }
     }
 }

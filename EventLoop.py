@@ -29,6 +29,42 @@ def invoke(func, time):
     return asyncio.create_task(do_func())
 
 
+class Task:
+    def __init__(self, func, trigger_time, repeat):
+        self.func = func
+        self.trigger_time = trigger_time
+        self.repeat = repeat
+
+        self.current_time = 0.0
+
+    def check(self, dt):
+        self.current_time += dt
+        if self.current_time >= self.trigger_time:
+            self.func()
+            self.current_time -= self.trigger_time
+
+            return True
+
+        return False
+
+
+class SynchronousEventLoop:
+    def __init__(self):
+        self.tasks = []
+
+    def update(self, delta_time: float):
+        for task in self.tasks[:]:
+            if task.check(delta_time):
+                if not task.repeat:
+                    self.tasks.remove(task)
+
+    def invoke_repeating(self, func, time):
+        self.tasks.append(Task(func, time, True))
+
+    def invoke(self, func, time):
+        self.tasks.append(Task(func, time, False))
+
+
 class EventLoop(QObject):
     def __init__(self, app: QApplication):
         super().__init__()

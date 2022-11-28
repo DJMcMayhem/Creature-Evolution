@@ -9,7 +9,7 @@ from Food import Food
 from Prey import DumbPrey, BrainPrey
 from RayCaster import RayCaster
 from Predator import Predator
-from EventLoop import invoke_repeating, invoke
+import EventLoop
 
 import asyncio
 import random
@@ -31,17 +31,20 @@ class Environment(QQuickPaintedItem):
             Food: []
         }
 
+        self.event_loop = EventLoop.SynchronousEventLoop()
         # Move and draw at 60 _FPS, but check overlap is more intensive so do that every 100ms
         # This might miss some collisions
-        invoke_repeating(lambda: self.spawn_actors(Food, 2), 0.5)
-        invoke_repeating(self.update_actors, 1 / 60)
-        invoke_repeating(self.update_frame_time, 1)
-        invoke(self.spawn_initial, 1)
+        EventLoop.invoke_repeating(self.update_actors, 1 / 60)
+
+        # self.event_loop.invoke_repeating(lambda: self.spawn_actors(Food, 2), 0.5)
+        self.event_loop.invoke_repeating(self.update_frame_time, 1)
+        self.event_loop.invoke(self.spawn_initial, 1)
 
         self.last_update_time = None
 
         self._frames = 0
         self._fps = 0
+        self._game_time = 0
 
         self.delete_actors: typing.Set[Actor.Actor] = set()
 
@@ -52,6 +55,11 @@ class Environment(QQuickPaintedItem):
     @property
     def chunk_size(self):
         return int(self.width() / self.num_chunks)
+
+    gameTimeChanged = pyqtSignal()
+    @pyqtProperty(float, notify=gameTimeChanged)
+    def game_time(self):
+        return self._game_time
 
     @pyqtSlot(int, int)
     def on_clicked(self, x, y):
@@ -145,8 +153,12 @@ class Environment(QQuickPaintedItem):
         if self.last_update_time is None:
             self.last_update_time = t
 
-        time_delta = t - self.last_update_time
+        time_delta = 1/60
         self.last_update_time = t
+        self.event_loop.update(time_delta)
+
+        self._game_time += time_delta
+        self.gameTimeChanged.emit()
 
         # Reset the chunk list
         self.chunk_list = [[[] for _ in range(self.num_chunks)] for _ in range(self.num_chunks)]
